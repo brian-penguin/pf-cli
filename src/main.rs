@@ -4,52 +4,62 @@ extern crate csv;
 
 use quicli::prelude::*;
 use std::fs::File;
-use std::io::Read;
+use std::process;
 
 /// Get search term for Pathfinder stuff
 // This needs to change to support a search term instead
+
 #[derive(Debug, StructOpt)]
 struct Cli {
-    // Add a CLI argument `--spell`/-s` that defaults to none, and has this help text:
-    /// How many lines to get
-    #[structopt(long = "spell", short = "s", default_value = "")]
-    spell: String,
     #[structopt(long = "rebuild", short = "r", default_value = "y")]
     rebuild: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct Spell {
     name: String,
     description: String,
+    school: String,
+    subschool: String,
+    descriptor: String,
+    spell_level: String,
+    casting_time: String,
+    components: String,
+    costly_components: String,
+    range: String,
+    area: String,
+    effect: String,
+    targets: String,
+    duration: String,
+    dismissable: Option<String>,
+    shapeable: Option<String>,
+    saving_throw: String,
+    spell_resistance: Option<String>,
+    source: String,
+    short_description: String,
+    id: String,
+    material_costs: Option<String>,
 }
 
 main!(|args: Cli| {
     if &args.rebuild == "y" {
-        // run_reload;
         let file_path = "./data.csv";
-        parse_spells(file_path);
+        if let Err(err) = parse_spells(file_path) {
+            println!("{}", err);
+            process::exit(1);
+        }
     };
 });
 
-/// Reload the Elastic Search Index
-fn run_reload(file_path: &str) {
-    let spells = read_file(file_path);
-    println!("{:?}", spells);
-    parse_spells(file_path);
-}
-
 fn parse_spells(file_path: &str) -> Result<()> {
-    let file = open_file("./data.csv");
+    let file = open_file(file_path);
     let mut csv_reader = csv::Reader::from_reader(file);
-    for result in csv_reader.records() {
-        let record = result?;
-
-        // Todo: Add more of these guys and fill out the struct
-        let name = &record[0];
-        let description = &record[16];
-
-        println!("{:?} -> {:?}", name, description)
+    // This shit is dope.
+    // because we used the derive(Deserialize) with spells we can make a spell
+    // from this record implicitly
+    for result in csv_reader.deserialize() {
+        let spell: Spell = result?;
+        println!("{:#?}", spell);
     }
     Ok(())
 }
@@ -57,15 +67,7 @@ fn parse_spells(file_path: &str) -> Result<()> {
 /// Open a File at a given Path
 fn open_file(path: &str) -> std::fs::File {
     match File::open(path) {
-        Err(_why) => panic!("Couldn't open file"),
+        Err(_why) => panic!("Couldn't open file: {}", path),
         Ok(file) => file,
     }
-}
-
-/// Read a file at a given path
-fn read_file(path: &str) -> Result<String> {
-    let mut result = String::new();
-    let mut file = open_file(path);
-    file.read_to_string(&mut result)?;
-    Ok(result)
 }
