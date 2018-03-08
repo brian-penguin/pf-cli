@@ -47,7 +47,8 @@ main!(|args: Cli| {
         if let Err(err) = parse_spells(file_path) {
             println!("{}", err);
             process::exit(1);
-        }
+        };
+        process::exit(0);
     };
 });
 
