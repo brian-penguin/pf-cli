@@ -15,28 +15,43 @@ struct Cli {
     #[structopt(long = "spell", short = "s", default_value = "")]
     spell: String,
     #[structopt(long = "rebuild", short = "r", default_value = "y")]
-    reload: String,
+    rebuild: String,
 }
 
 #[derive(Debug)]
 struct Spell {
     name: String,
-
-
+    description: String,
 }
 
 main!(|args: Cli| {
-    if &args.reload == "y" {
-        run_reload;
+    if &args.rebuild == "y" {
+        // run_reload;
+        let file_path = "./data.csv";
+        parse_spells(file_path);
     };
 });
 
 /// Reload the Elastic Search Index
-fn run_reload() {
-    let file_name = "./data.csv";
-    let spells = read_file(file_name);
+fn run_reload(file_path: &str) {
+    let spells = read_file(file_path);
     println!("{:?}", spells);
+    parse_spells(file_path);
+}
 
+fn parse_spells(file_path: &str) -> Result<()> {
+    let file = open_file("./data.csv");
+    let mut csv_reader = csv::Reader::from_reader(file);
+    for result in csv_reader.records() {
+        let record = result?;
+
+        // Todo: Add more of these guys and fill out the struct
+        let name = &record[0];
+        let description = &record[16];
+
+        println!("{:?} -> {:?}", name, description)
+    }
+    Ok(())
 }
 
 /// Open a File at a given Path
