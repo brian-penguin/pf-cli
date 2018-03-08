@@ -19,6 +19,12 @@ struct Cli {
 }
 
 #[derive(Debug)]
+struct Spell {
+    name: String,
+
+
+}
+
 main!(|args: Cli| {
     if &args.reload == "y" {
         run_reload;
