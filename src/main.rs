@@ -4,11 +4,11 @@ extern crate csv;
 
 use quicli::prelude::*;
 use std::fs::File;
-use std::process;
+
+const SPELL_DATA_FILE: &str = "./data.csv";
 
 /// Get search term for Pathfinder stuff
-// This needs to change to support a search term instead
-
+// TODO: allow for a search term
 #[derive(Debug, StructOpt)]
 struct Cli {
     #[structopt(long = "rebuild", short = "r", default_value = "y")]
@@ -43,26 +43,27 @@ struct Spell {
 
 main!(|args: Cli| {
     if &args.rebuild == "y" {
-        let file_path = "./data.csv";
-        if let Err(err) = parse_spells(file_path) {
-            println!("{}", err);
-            process::exit(1);
+        let collection = match parse_spells(SPELL_DATA_FILE) {
+            Err(err) => panic!("Can't hang with parsing the spell files{:?}", err),
+            Ok(spell_collection) => spell_collection,
         };
-        process::exit(0);
+
+        println!("{:?}", collection)
     };
 });
 
-fn parse_spells(file_path: &str) -> Result<()> {
+
+/// Parse the spells into a Spell Struct
+fn parse_spells(file_path: &str) -> Result<Vec<Spell>> {
     let file = open_file(file_path);
+    let mut spell_collection = Vec::new();
     let mut csv_reader = csv::Reader::from_reader(file);
-    // This shit is dope.
-    // because we used the derive(Deserialize) with spells we can make a spell
-    // from this record implicitly
+    // This just says read each line in and deserialize it to a spell struct
     for result in csv_reader.deserialize() {
         let spell: Spell = result?;
-        println!("{:#?}", spell);
+        spell_collection.push(spell);
     }
-    Ok(())
+    Ok(spell_collection)
 }
 
 /// Open a File at a given Path
