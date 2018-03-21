@@ -5,6 +5,11 @@ authors = ["Brian Tenggren <btenggren20@gmail.com>"]
 
 [dependencies]
 csv = "1.0.0-beta.5"
-serde = "1.0.27"
-serde_derive = "1.0.27"
+elastic = "0.20.9"
+elastic_derive = "*"
 quicli = "0.2"
+serde = "1.0.27"
+pbr = "1.0.0"
+serde_derive = "1.0.27"
+serde_json = "*"
+structopt = "*"
